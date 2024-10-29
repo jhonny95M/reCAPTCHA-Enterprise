@@ -16,17 +16,18 @@ Esta guía detalla cómo implementar un desafío de autenticación multifactor (
 3. [Implementación en React y C#](#implementación-en-react-y-c)
 4. [Adaptación para Otros Lenguajes](#adaptación-para-otros-lenguajes)
 5. [Recursos y Enlaces Útiles](#recursos-y-enlaces-útiles)
----
+
+![Diagrama de Secuencia](./reCAPTCHA-CAPTURE/SEQUENCE_DIAGRAMV1.SVG)
 
 ## Requisitos previos
 
 
 ### 1. Acceso a Google Cloud Platform
- con permisos para gestionar y configurar reCAPTCHA Enterprise.
-### 2. Llaves de reCAPTCHA Enterprise
- obtenidas en el panel de configuración de reCAPTCHA Enterprise en Google Cloud.
-### 3. Configuración en Google Cloud
-Para configurar reCAPTCHA Enterprise en Google Cloud, sigue estos pasos formales y detallados:
+ Contar con permisos o administrar una cuenta a gcp para gestionar y configurar reCAPTCHA Enterprise.
+<!-- ### 2. Llaves de reCAPTCHA Enterprise
+ obtenidas en el panel de configuración de reCAPTCHA Enterprise en Google Cloud. -->
+### 2. Configuración en Google Cloud
+Para configurar reCAPTCHA Enterprise en Google Cloud, sigue estos pasos detallados:
 
 1. ***Acceder al Servicio de Seguridad:***
 
@@ -39,12 +40,15 @@ Para configurar reCAPTCHA Enterprise en Google Cloud, sigue estos pasos formales
 - Selecciona el botón 'Crear clave'.
 - Especifica un nombre para la clave y el dominio de la aplicación web. Para un entorno de desarrollo, se recomienda usar 'localhost'.
 - Una vez creada la clave, se generará un 'ID' que se usará en la aplicación web.
+![](./reCAPTCHA-CAPTURE/site-ket-clave-recaptcha.png)
 4. ***Seguir los Pasos de Integración:***
 
 - Después de crear la clave, se mostrará una pantalla con los pasos para la integración.
 - Agregar reCAPTCHA al Sitio Web: Sigue el ejemplo proporcionado para agregar reCAPTCHA al sitio web.
 - Verificar el Token de reCAPTCHA: Implementa la verificación del token en el backend.
+![](./reCAPTCHA-CAPTURE/configurar-backend.png)
 - Revisar la Configuración: Asegúrate de revisar y verificar que todo esté configurado correctamente.
+![](./reCAPTCHA-CAPTURE/revision-recaptcha.png)
 Para más detalles y documentación oficial del servicio reCAPTCHA, visita el siguiente enlace:
 ### 4. Creación de Cuenta de Servicio
 Para configurar reCAPTCHA Enterprise en tu backend, es necesario crear una cuenta de servicio en Google Cloud. Sigue estos pasos:
@@ -53,6 +57,7 @@ Para configurar reCAPTCHA Enterprise en tu backend, es necesario crear una cuent
 
 - Accede a la consola de Google Cloud y navega a la sección de IAM & Admin.
 - Selecciona Cuentas de servicio y haz clic en Crear cuenta de servicio.
+![Captura crear cuenta servicio](./reCAPTCHA-CAPTURE/Create-cuenta-servicio.png)
 2. **Paso 1: Nombre y ID de la Cuenta de Servicio:***
 
 - Proporciona un nombre y un ID para la cuenta de servicio. Este paso es obligatorio.
@@ -66,7 +71,9 @@ Para configurar reCAPTCHA Enterprise en tu backend, es necesario crear una cuent
 
 - Una vez creada la cuenta de servicio, aparecerán unos tabs en la parte superior.
 - Selecciona la opción Claves.
+![Creación de la clave para la comunicación del backend con recaptcha](./reCAPTCHA-CAPTURE/create-clave-service-account.png)
 - Haz clic en Agregar clave y selecciona Crear clave nueva en formato JSON.
+![](./reCAPTCHA-CAPTURE/create-clave-service-account.png)
 - Descarga el archivo JSON, ya que se usará para la configuración en el backend.
 
 [Configuración de reCAPTCHA en Google Cloud](https://console.cloud.google.com/security/recaptcha?hl=es-419&project=unified-sensor-148719)

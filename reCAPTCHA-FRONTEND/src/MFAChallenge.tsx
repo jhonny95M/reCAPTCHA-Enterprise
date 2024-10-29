@@ -37,7 +37,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
       const token = await (window as any).grecaptcha.enterprise.execute(keyId,
         { action: 'login', twofactor: true });
 
-      const verifyCaptchaResponse = await fetch('https://localhost:7037/verify-recaptcha', {
+      const verifyCaptchaResponse = await fetch('http://localhost:5256/verify-recaptcha', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,9 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
           </button>
         </div>
       )}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div className='flex' style={{justifyContent:'center'}}>
+      {error && <p style={{ color: 'red', justifySelf:'center' }}>{error}</p>}
+      </div>
     </div>
   );
 };

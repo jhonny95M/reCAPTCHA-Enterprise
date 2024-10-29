@@ -73,8 +73,10 @@ const Login: React.FC<LoginProps> = ({ onChallenge }) => {
                                         required
                                         style={{ marginBottom: '20px', padding: '10px', width: '100%' }}
                                     />
-                                    {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
                                 </div>
+                                <div className='flex'>
+                                    {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
+                                    </div>
                                 <button className='btn-logo' type="submit" disabled={isLoading} >
                                     {isLoading ? 'Cargando...' : 'Ingresar'}
                                 </button>
