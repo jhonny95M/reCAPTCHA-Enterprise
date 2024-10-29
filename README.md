@@ -26,7 +26,7 @@ Esta guía detalla cómo implementar un desafío de autenticación multifactor (
  Contar con permisos o administrar una cuenta a gcp para gestionar y configurar reCAPTCHA Enterprise.
 <!-- ### 2. Llaves de reCAPTCHA Enterprise
  obtenidas en el panel de configuración de reCAPTCHA Enterprise en Google Cloud. -->
-### 2. Configuración en Google Cloud
+### 2. Configuración en Google Cloud Platform
 Para configurar reCAPTCHA Enterprise en Google Cloud, sigue estos pasos detallados:
 
 1. ***Acceder al Servicio de Seguridad:***
@@ -98,18 +98,14 @@ Para configurar reCAPTCHA Enterprise en tu backend, es necesario crear una cuent
    <script src="https://www.recaptcha.net/recaptcha/enterprise.js" async defer></script>
    ```
 
-### 4. Visualización de la Cuota del Servicio
-   Para visualizar la cuota del servicio de reCAPTCHA Enterprise, accede al siguiente enlace:
-   - [Cuota de reCAPTCHA Enterprise](https://console.cloud.google.com/apis/api/recaptchaenterprise.googleapis.com/quotas?hl=es&project=unified-sensor-148719)
-   - [Precios de reCAPTCHA Enterprise](https://cloud.google.com/security/products/recaptcha?hl=es-419#pricing)
 
    En este enlace, podrás ver el uso actual y los límites de la cuota para tu proyecto en Google Cloud.
 
-### 5. Documentación Oficial del Servicio reCAPTCHA
+### 4. Documentación Oficial del Servicio reCAPTCHA
    Para más detalles y documentación oficial del servicio reCAPTCHA, visita el siguiente enlace:
    - [Documentación Oficial de reCAPTCHA](https://cloud.google.com/recaptcha-enterprise/docs)
    - [Flujo de reCAPTCHA](https://cloud.google.com/recaptcha/docs/overview?hl=es-419)
-### 6. Configuración de la Autenticación de Varios Factores (MFA)
+### 5. Configuración de la Autenticación de Varios Factores (MFA)
 
 Para configurar la autenticación de varios factores (MFA) con reCAPTCHA Enterprise, sigue estos pasos:
 
@@ -121,7 +117,7 @@ Para configurar la autenticación de varios factores (MFA) con reCAPTCHA Enterpr
 2. **Flujo de Trabajo de la MFA**:
    - Instrumenta el flujo de trabajo fundamental en tu sitio web.
    - Crea una evaluación con el token generado y los parámetros de la MFA para obtener un `requestToken`.
-   - Activa un desafío de MFA con el `requestToken` (solo se admite el correo electrónico).
+   - Activa un desafío de MFA con el `requestToken`.
    - Verifica el PIN ingresado por el usuario final en tu sitio web.
    - Crea una nueva evaluación con el token de verificación.
 
@@ -140,7 +136,7 @@ Para configurar la autenticación de varios factores (MFA) con reCAPTCHA Enterpr
 Para más detalles y documentación oficial del servicio reCAPTCHA, visita el siguiente enlace:
 - [Configuración de la Autenticación de Varios Factores](https://cloud.google.com/recaptcha/docs/integrate-account-verification?hl=es-419)
 
-### 7. Configuración del Backend para la Verificación del Captcha
+### 6. Configuración del Backend para la Verificación del Captcha
 
 Para configurar tu backend y verificar el captcha utilizando las bibliotecas cliente de reCAPTCHA Enterprise, sigue estos pasos:
 
@@ -157,31 +153,134 @@ Para configurar tu backend y verificar el captcha utilizando las bibliotecas cli
    Una vez instalada la biblioteca cliente, puedes configurar tu backend para verificar el captcha. Aquí tienes un ejemplo en C#:
 
    ```csharp
+   using dotenv.net;
    using Google.Cloud.RecaptchaEnterprise.V1;
-   using System;
+   using Microsoft.Extensions.DependencyInjection;
+   using System.Net.Mail;
 
-   public class RecaptchaService
+   var builder = WebApplication.CreateBuilder(args);
+
+   DotEnv.Load();
+   // Add services to the container.
+   // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+   builder.Services.AddEndpointsApiExplorer();
+   builder.Services.AddSwaggerGen();
+   // Configura CORS
+   builder.Services.AddCors(options =>
    {
-       private readonly RecaptchaEnterpriseServiceClient _client;
-       private readonly string _projectId;
+      options.AddDefaultPolicy(policy =>
+      {
+         policy.WithOrigins("http://localhost:5173")
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+      });
+   });
+   // Configura el cliente RecaptchaEnterpriseServiceClient como un servicio singleton
+   builder.Services.AddSingleton<RecaptchaEnterpriseServiceClient>(sp =>
+   {
+      var credentialsPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+      return new RecaptchaEnterpriseServiceClientBuilder
+      {
+         CredentialsPath = credentialsPath
+      }.Build();
+   });
 
-       public RecaptchaService(string projectId)
-       {
-           _client = RecaptchaEnterpriseServiceClient.Create();
-           _projectId = projectId;
-       }
+   var app = builder.Build();
 
-       public bool VerifyToken(string token)
-       {
-           var request = new AnnotateAssessmentRequest
-           {
-               Name = AssessmentName.FromProjectAssessment(_projectId, token),
-               Annotation = AnnotateAssessmentRequest.Types.Annotation.Legitimate
-           };
+   // Habilita CORS
+   app.UseCors();
 
-           var response = _client.AnnotateAssessment(request);
-           return response.Annotation == AnnotateAssessmentRequest.Types.Annotation.Legitimate;
-       }
+   // Configure the HTTP request pipeline.
+   if (app.Environment.IsDevelopment())
+   {
+      app.UseSwagger();
+      app.UseSwaggerUI();
+   }
+
+   app.UseHttpsRedirection();
+
+   var summaries = new[]
+   {
+      "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+   };
+
+   app.MapGet("/weatherforecast", () =>
+   {
+      var forecast = Enumerable.Range(1, 5).Select(index =>
+         new WeatherForecast
+         (
+               DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+               Random.Shared.Next(-20, 55),
+               summaries[Random.Shared.Next(summaries.Length)]
+         ))
+         .ToArray();
+      return forecast;
+   })
+   .WithName("GetWeatherForecast")
+   .WithOpenApi();
+   app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterpriseServiceClient recaptchaClient) =>
+   {
+      var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
+      var projectId = recaptchaConfig["ProjectId"];
+      var siteKey = recaptchaConfig["SiteKey"];
+      var accountId = recaptchaConfig["AccountId"];
+      var emailAddress = recaptchaConfig["EmailAddress"];
+
+      using var reader = new StreamReader(request.Body);
+      var body = await reader.ReadToEndAsync();
+      var token = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("token").GetString();
+      var username = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("username").GetString();
+
+      // Configura la solicitud de evaluación
+      var assesName = AssessmentName.FromProjectAssessment(projectId, token);
+      var assessment = new Assessment
+      {
+         Event = new Event
+         {
+               Token = token,
+               SiteKey = siteKey,
+               UserInfo = new UserInfo
+               {
+                  AccountId = accountId
+               }
+         },
+         AccountVerification = new AccountVerificationInfo
+         {
+               Endpoints = { new EndpointVerificationInfo { EmailAddress = username } }
+         }
+      };
+      var requestAssessment = new CreateAssessmentRequest
+      {
+         Parent = $"projects/{projectId}",
+         Assessment = assessment
+      };
+      try
+      {
+         var response = await recaptchaClient.CreateAssessmentAsync(requestAssessment);
+         var tokenProperties = response.TokenProperties;
+         var riskAnalysis = response.RiskAnalysis;
+
+         if (tokenProperties?.Valid == true && riskAnalysis?.Score >= 0.5)
+         {
+               return Results.Ok(new { success = true, response });
+         }
+         else
+         {
+               return Results.BadRequest(new { success = false });
+         }
+      }
+      catch (Exception ex)
+      {
+         Console.Error.WriteLine(ex);
+         return Results.StatusCode(500);
+      }
+   }).WithName("reCAPTCHA")
+   .WithOpenApi();
+   app.Run();
+
+   internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+   {
+      public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
    }
    ```
    Para más detalles sobre cómo usar las bibliotecas cliente de reCAPTCHA Enterprise, visita el siguiente enlace:
@@ -198,8 +297,9 @@ Para configurar tu backend y verificar el captcha utilizando las bibliotecas cli
 - [Google Cloud Console](https://console.cloud.google.com/welcome?project=unified-sensor-148719)
 - [Documentación de reCAPTCHA](https://cloud.google.com/recaptcha/docs?hl=es-419)
 - [Precios de reCAPTCHA Enterprise](https://cloud.google.com/security/products/recaptcha?hl=es-419#pricing)
+- [Cuota de reCAPTCHA Enterprise](https://console.cloud.google.com/apis/api/recaptchaenterprise.googleapis.com/quotas?hl=es&project=unified-sensor-148719)
 
 ### Notas:
 
 - Asegúrate de personalizar la sección de **Implementación en React y C#** y **Adaptación para Otros Lenguajes** según sea necesario para proporcionar instrucciones específicas.
-- Revisa los enlaces y asegúrate de que estén actualizados y sean relevantes para tu g
+- Revisa los enlaces y asegúrate de que estén actualizados y sean relevantes para tu el desarrollo de la aplicación.
