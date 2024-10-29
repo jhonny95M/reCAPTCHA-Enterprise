@@ -1,0 +1,21 @@
+.mfa-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.challenge-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pin-verification {
+  margin-top: 20px;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}

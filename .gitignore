@@ -194,3 +194,4 @@ public/
 # Ignore the backend project folder
 reCAPTCHA-BACKEND-NODEJS/node_modules/
 reCAPTCHA-FRONTEND/node_modules/
+
