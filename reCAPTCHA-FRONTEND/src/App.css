@@ -19,3 +19,19 @@
   color: red;
   font-weight: bold;
 }
+.title-app{
+  text-align: center;
+}
+span.app-recaptcha{  
+  /* font-size: 24px; */
+  color: #ff4240; /* Bright color */
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* Eye-catching font */
+}
+span.app-mfa{
+  text-align: center;
+  font-weight: bold;
+  color: #ff4240; /* Bright color */
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* Eye-catching font */
+  font-weight: bold;
+}
+

@@ -24,10 +24,8 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
   place-items: center;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {
@@ -65,4 +63,71 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+.container-logo{
+  display: block;
+  width: 350px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+
+}
+div.img-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+.log-izipay{
+  display: flex;
+  background-color: #ff4240;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  margin: -10px -10px 0 -10px;
+  
+}
+button.btn-back{
+  display: flex;
+  gap: 10px;
+  font-size: 16px;
+  margin-left: 10px;
+}
+button.btn-back-logo{
+  background-color: #3dd2ce;
+  color: white;
+  justify-content: center;
+  margin-left: 10px;
+}
+span.login-back{
+  display: flex;
+color: #ff4240;
+justify-content: center;
+align-items: center;
+
+}
+span.center-back{
+  justify-content: center;
+  display: flex;
+  gap: 10px;
+  color: #ff4240;
+}
+button.btn-logo{
+  background-color: #3dd2ce;
+color: white;
+padding: 10px 20px;
+width: 100%;
+}
+div.container-form{
+  display: block;
+}
+.container-form> .center-form{
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+}
+.flex{
+display: flex;
 }

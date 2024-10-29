@@ -17,7 +17,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Integración de reCAPTCHA MFA</h1>
+      <h1 className='title-app'>Integración de <span className='app-recaptcha'>reCAPTCHA</span> con <span className='app-mfa'>MFA</span></h1>
       <RecaptchaMFA keyId={siteKey}  />
     </div>
   );

@@ -74,6 +74,7 @@ app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterprise
     using var reader = new StreamReader(request.Body);
     var body = await reader.ReadToEndAsync();
     var token = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("token").GetString();
+    var username = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("username").GetString();
 
     // Configura la solicitud de evaluación
     var assesName = AssessmentName.FromProjectAssessment(projectId, token);
@@ -90,7 +91,7 @@ app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterprise
         },
         AccountVerification = new AccountVerificationInfo
         {
-            Endpoints = { new EndpointVerificationInfo { EmailAddress = emailAddress } }
+            Endpoints = { new EndpointVerificationInfo { EmailAddress = username } }
         }
     };
     var requestAssessment = new CreateAssessmentRequest
