@@ -17,7 +17,7 @@ Esta guía detalla cómo implementar un desafío de autenticación multifactor (
 4. [Adaptación para Otros Lenguajes](#adaptación-para-otros-lenguajes)
 5. [Recursos y Enlaces Útiles](#recursos-y-enlaces-útiles)
 
-![Diagrama de Secuencia](./reCAPTCHA-CAPTURE/SEQUENCE_DIAGRAMV1.SVG)
+![Diagrama de Secuencia](./reCAPTCHA-CAPTURE/sequence_diagramv1.svg)
 
 ## Requisitos previos
 
