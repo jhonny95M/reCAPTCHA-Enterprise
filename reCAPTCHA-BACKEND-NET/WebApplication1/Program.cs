@@ -44,25 +44,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterpriseServiceClient recaptchaClient) =>
 {
     var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
@@ -119,11 +101,62 @@ app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterprise
         Console.Error.WriteLine(ex);
         return Results.StatusCode(500);
     }
-}).WithName("reCAPTCHA")
+})
+    .WithName("reCAPTCHA")
 .WithOpenApi();
+
+// Endpoint de verificación del verdictToken
+app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseServiceClient recaptchaClient) =>
+{
+    var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
+    var projectId = recaptchaConfig["ProjectId"];
+    var siteKey = recaptchaConfig["SiteKey"];
+    // Obtener el verdictToken enviado desde el frontend
+    var requestBody = await context.Request.ReadFromJsonAsync<VerificationRequest>();
+
+    if (requestBody is null || string.IsNullOrEmpty(requestBody.VerdictToken))
+    {
+        return Results.BadRequest(new { message = "Token no válido o ausente" });
+    }
+
+    // ID del proyecto en Google Cloud donde está configurado reCAPTCHA Enterprise
+
+    // Crear una solicitud de evaluación para verificar el token
+    var assessmentRequest = new CreateAssessmentRequest
+    {
+        Parent = $"projects/{projectId}",
+        Assessment = new Assessment
+        {
+            Event = new Event
+            {
+                Token = requestBody.VerdictToken,
+                SiteKey = siteKey // Clave de tu sitio de reCAPTCHA configurada en Google Cloud
+            }
+        }
+    };
+
+    // Intentar crear la evaluación
+    try
+    {
+        var response = await recaptchaClient.CreateAssessmentAsync(assessmentRequest);
+        Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(response));
+        // Verificar si el token es válido y si la evaluación determina que es legítima
+        if (response.TokenProperties.Valid && response.RiskAnalysis.Score >= 0.5)
+        {
+            return Results.Ok(new { isValid = true, message = "Token válido" });
+        }
+        else
+        {
+            return Results.Ok(new { isValid = false, message = "Token inválido o bajo nivel de confianza" });
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.StatusCode(500);
+    }
+});
+
 app.Run();
 
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+// Modelo para recibir el token del frontend
+public record VerificationRequest(string VerdictToken);
