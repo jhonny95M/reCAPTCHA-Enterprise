@@ -111,6 +111,7 @@ app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseSe
     var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
     var projectId = recaptchaConfig["ProjectId"];
     var siteKey = recaptchaConfig["SiteKey"];
+    var accountId = recaptchaConfig["AccountId"];
     // Obtener el verdictToken enviado desde el frontend
     var requestBody = await context.Request.ReadFromJsonAsync<VerificationRequest>();
 
@@ -130,7 +131,15 @@ app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseSe
             Event = new Event
             {
                 Token = requestBody.VerdictToken,
-                SiteKey = siteKey // Clave de tu sitio de reCAPTCHA configurada en Google Cloud
+                SiteKey = siteKey,
+                UserInfo = new UserInfo
+                {
+                    AccountId = accountId
+                }
+            },
+            AccountVerification = new AccountVerificationInfo
+            {
+                Endpoints = { new EndpointVerificationInfo { EmailAddress = requestBody.emailAddress } }
             }
         }
     };
@@ -141,7 +150,9 @@ app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseSe
         var response = await recaptchaClient.CreateAssessmentAsync(assessmentRequest);
         Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(response));
         // Verificar si el token es válido y si la evaluación determina que es legítima
-        if (response.TokenProperties.Valid && response.RiskAnalysis.Score >= 0.5)
+        if (response.TokenProperties.Valid && 
+        response.RiskAnalysis.Score >= 0.5 &&
+        response.AccountVerification.LatestVerificationResult==AccountVerificationInfo.Types.Result.SuccessUserVerified)
         {
             return Results.Ok(new { isValid = true, message = "Token válido" });
         }
@@ -159,4 +170,4 @@ app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseSe
 app.Run();
 
 // Modelo para recibir el token del frontend
-public record VerificationRequest(string VerdictToken);
+public record VerificationRequest(string VerdictToken,string emailAddress);

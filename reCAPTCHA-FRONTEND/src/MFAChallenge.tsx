@@ -15,6 +15,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
   const [error, setError] = useState<string | null>(null);
   const [verificationHandle, setVerificationHandle] = useState<any>(null)
   const [showLogin, setShowLogin] = useState(true);
+  const [email,setEmail] = useState<string>('');//solo para almacenarlo, se puede cambiar el flujo
   useEffect(() => {
     if (requestToken) {
       // Call the challenge API.
@@ -37,7 +38,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
       const token = await (window as any).grecaptcha.enterprise.execute(keyId,
         { action: 'login', twofactor: true });
 
-      const verifyCaptchaResponse = await fetch('http://localhost:5256/verify-recaptcha', {
+      const verifyCaptchaResponse = await fetch('https://localhost:7037/verify-recaptcha', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,6 +58,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
 
       setRequestToken(requestToken);
       setShowLogin(false);
+      setEmail(username);
     } catch (err) {
       setError('Error en el desafío MFA');
     } finally {
@@ -76,8 +78,63 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
         if (verifyResponse.isSuccess()) {
           // Handle success: Send the result of `verifyResponse.getVerdictToken()`
           // to the backend in order to determine if the code was valid.
-          console.log(verifyResponse);
-          alert('¡MFA completado con éxito!');
+          const verdictToken = verifyResponse.getVerdictToken();
+
+
+          // fetch('https://localhost:7037/verify-recaptcha', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({ token:verdictToken, username:email }),
+          // })
+          // .then((response)=>response.json())
+          // .then((result)=>{
+          //   const requestToken = result.response;
+          //   /***correcta verificacion SUCCESS_USER_VERIFIED	
+          //    * {
+          //       [...],
+          //       "accountVerification": {
+          //         "endpoints": [{
+          //           "emailAddress": "foo@bar.com",
+          //           "requestToken": "tplIUFvvJUIpLaOH0hIVj2H71t5Z9mDK2RhB1SAGSIUOgOIsBv",
+          //           "lastVerificationTime": "2020-03-23 08:27:12 PST",
+          //         }],
+          //         "latestVerificationResult": "SUCCESS_USER_VERIFIED"
+          //       }
+          //     }
+          //    * El usuario se ha verificado correctamente. Esto significa que el desafío de verificación de la cuenta se completó con éxito.
+          //    * ***/
+          //   console.log(requestToken)
+          // }).catch((backendError) => {
+          //   setError('PIN incorrecto, intenta de nuevo.');
+          //   console.error("Error al enviar el token al backend:", backendError);
+          //   // Manejo de error: notificar al usuario sobre un problema en la verificación del token
+          // });
+      // Enviar `verdictToken` al backend para su validación adicional
+      fetch('https://localhost:7037/verify-verdict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ verdictToken, emailAddress:email }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.isValid) {
+            console.log("Código validado exitosamente en el backend.");
+            // Lógica adicional de éxito: redirigir al usuario o mostrar un mensaje de éxito
+            alert('!La verificación de PIN junto Backend se verifico satisfactoriamente¡')
+          } else {
+            console.log("Código inválido según la verificación del backend.");
+            // Lógica en caso de código inválido: mostrar un mensaje de error al usuario
+          }
+        })
+        .catch((backendError) => {
+          setError('PIN incorrecto, intenta de nuevo.');
+          console.error("Error al enviar el token al backend:", backendError);
+          // Manejo de error: notificar al usuario sobre un problema en la verificación del token
+        });
         } else {
           // Handle API failure
           setError('PIN incorrecto, intenta de nuevo.');
