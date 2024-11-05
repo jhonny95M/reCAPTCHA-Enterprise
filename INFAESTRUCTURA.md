@@ -32,7 +32,7 @@ Esta guía detalla cómo implementar un desafío de autenticación multifactor (
    - Configura un **sitio web** y obtén las claves necesarias:
      - **SITE_ID**: ID de la clave de reCAPTCHA configurada.
      - **Secret Key** (para el backend en caso de verificaciones).
-     ![](./reCAPTCHA-CAPTURE/site-ket-clave-recaptcha.png)
+     ![](./reCAPTCHA-CAPTURE/create-clave-recaptcha.png)
      ![](./reCAPTCHA-CAPTURE/site-ket-clave-recaptcha.png)
 
 #### 3. Creación de Cuenta de Servicio
