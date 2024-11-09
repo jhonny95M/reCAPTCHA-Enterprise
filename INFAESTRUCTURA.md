@@ -1,88 +1,165 @@
-# Documentación: Implementación MFA con reCAPTCHA Enterprise
+# **Documentación de Implementación de reCAPTCHA Enterprise en GCP**
 
-Esta guía detalla cómo implementar un desafío de autenticación multifactor (MFA) utilizando reCAPTCHA Enterprise en una aplicación web. El objetivo es desafiar al usuario para realizar una verificación adicional en el caso de que la evaluación determine la necesidad de mayor seguridad.
+## **Objetivo**
+Este documento detalla el proceso para crear e implementar **reCAPTCHA Enterprise** en Google Cloud Platform (GCP), con las configuraciones necesarias para que el servicio funcione con tu dominio. También cubre la creación de una cuenta de servicio y asignación de roles adecuados para gestionar reCAPTCHA Enterprise.
 
-## Tabla de Contenidos
+---
 
-### Equipo de Infraestructura
+## **1. Creación del Proyecto en GCP**
 
-1. [Requisitos Previos](#requisitos-previos)
-2. [Configuración de reCAPTCHA Enterprise](#configuración-de-recaptcha-enterprise)
-   - [Crear el Proyecto en Google Cloud](#1-crear-el-proyecto-en-google-cloud)
-   - [Configurar reCAPTCHA Enterprise](#2-configurar-recaptcha-enterprise)
-   - [Visualización de la Cuota del Servicio](#4-visualización-de-la-cuota-del-servicio)
-   - [Documentación Oficial del Servicio reCAPTCHA](#5-documentación-oficial-del-servicio-recaptcha)
+### **Paso 1: Crear un nuevo proyecto**
+Primero, crearemos un proyecto en Google Cloud llamado `sop-izipay`. Este será el contenedor de todos los recursos relacionados con reCAPTCHA.
 
+```bash
+gcloud projects create sop-izipay --name="SOP Izipay"
+```
 
-## Equipo de Infraestructura
+- **Nombre del Proyecto**: `sop-izipay`
+- **Descripción**: Nombre del proyecto que será utilizado para el servicio de reCAPTCHA.
 
-### Requisitos Previos
+### **Paso 2: Configurar el proyecto por defecto**
 
-1. Acceso a Google Cloud Platform con permisos para gestionar y configurar reCAPTCHA Enterprise.
-2. Llaves de reCAPTCHA Enterprise obtenidas en el panel de configuración de reCAPTCHA Enterprise en Google Cloud.
+A continuación, configuraremos este proyecto recién creado como el proyecto predeterminado para usar con los comandos de `gcloud`.
 
-### Configuración de reCAPTCHA Enterprise
+```bash
+gcloud config set project sop-izipay
+```
 
-#### 1. Crear el Proyecto en Google Cloud
-   - Accede a [Google Cloud Console](https://console.cloud.google.com/).
-   - Crea un proyecto o selecciona uno existente.
+---
 
-#### 2. Configurar reCAPTCHA Enterprise
-   - En el menú de navegación, ve a **reCAPTCHA Enterprise**.
-   - Configura un **sitio web** y obtén las claves necesarias:
-     - **SITE_ID**: ID de la clave de reCAPTCHA configurada.
-     - **Secret Key** (para el backend en caso de verificaciones).
-     ![](./reCAPTCHA-CAPTURE/create-clave-recaptcha.png)
-     ![](./reCAPTCHA-CAPTURE/site-ket-clave-recaptcha.png)
+## **2. Habilitar la API de reCAPTCHA Enterprise**
 
-#### 3. Creación de Cuenta de Servicio
-Para configurar reCAPTCHA Enterprise en tu backend, es necesario crear una cuenta de servicio en Google Cloud. Sigue estos pasos:
+### **Paso 1: Habilitar el servicio de reCAPTCHA Enterprise**
+El siguiente paso es habilitar la API de reCAPTCHA Enterprise en el proyecto.
 
-1. **Crear una Cuenta de Servicio:**
+```bash
+gcloud services enable recaptchaenterprise.googleapis.com --project=sop-izipay
+```
 
-- Accede a la consola de Google Cloud y navega a la sección de IAM & Admin.
-- Selecciona Cuentas de servicio y haz clic en Crear cuenta de servicio.
-![Captura crear cuenta servicio](./reCAPTCHA-CAPTURE/Create-cuenta-servicio.png)
-2. **Paso 1: Nombre y ID de la Cuenta de Servicio:**
+---
 
-- Proporciona un nombre y un ID para la cuenta de servicio. Este paso es obligatorio.
-3. **Paso 2: Asignar un Rol:**
+## **3. Crear una Cuenta de Servicio para Gestionar reCAPTCHA**
 
-- Asigna el rol de reCAPTCHA a la cuenta de servicio. Este paso es obligatorio.
-4. **Paso 3: Opcional:**
+### **Paso 1: Crear la cuenta de servicio**
 
-- Este paso es opcional y puedes omitirlo si no necesitas configuraciones adicionales.
-5. **Generar y Descargar la Clave:**
+La cuenta de servicio es necesaria para gestionar la API de reCAPTCHA Enterprise desde tu proyecto. Usaremos esta cuenta para autorizar la creación de claves de reCAPTCHA y para ejecutar otras operaciones.
 
-- Una vez creada la cuenta de servicio, aparecerán unos tabs en la parte superior.
-- Selecciona la opción Claves.
-![Creación de la clave para la comunicación del backend con recaptcha](./reCAPTCHA-CAPTURE/create-clave-service-account.png)
-- Haz clic en Agregar clave y selecciona Crear clave nueva en formato JSON.
-![](./reCAPTCHA-CAPTURE/create-clave-service-account.png)
-- Descarga el archivo JSON, ya que se usará para la configuración en el backend.
+```bash
+gcloud iam service-accounts create recaptcha-service-account \
+    --display-name="reCAPTCHA Service Account" \
+    --project=sop-izipay
+```
 
-#### 4. Configuración de la Autenticación de Varios Factores (MFA)
-**Paso 1: Configurar remitente:**
-   - En la consola de Google Cloud, ve a la página de reCAPTCHA Enterprise.
-   - En el panel de Autenticación de Varios Factores, haz clic en Configurar.
-   - Habilita la verificación por correo electrónico y proporciona el nombre y correo electrónico del remitente.   
-   - [Mas detalles](https://console.cloud.google.com/security/recaptcha/settings?hl=es-419&project=unified-sensor-148719)
-   ![](/reCAPTCHA-CAPTURE/MFA1.png)
-   ![](/reCAPTCHA-CAPTURE/MMFA2.png)
-**Paso 2: Configurar dns:**
-   Si no se hizo una configuración con su DNS siga los siguientes pasos:
-   - Ir al link: [](https://search.google.com/search-console)
-   ![](/reCAPTCHA-CAPTURE/config-domain-mfa.png)
-   ![](/reCAPTCHA-CAPTURE/config-domain-mfa2.png)
+Este comando crea una cuenta de servicio llamada `recaptcha-service-account`.
 
+### **Paso 2: Asignar roles adecuados a la cuenta de servicio**
 
-### Visualización de la Cuota del Servicio
-   Para visualizar la cuota del servicio de reCAPTCHA Enterprise, accede al siguiente enlace:
-   - [Cuota de reCAPTCHA Enterprise](https://console.cloud.google.com/apis/api/recaptchaenterprise.googleapis.com/quotas?hl=es&project=unified-sensor-148719)
-   - [Precios de reCAPTCHA Enterprise](https://cloud.google.com/security/products/recaptcha?hl=es-419#pricing)
+Asignaremos roles a la cuenta de servicio para asegurarnos de que tenga los permisos necesarios para interactuar con la API de reCAPTCHA Enterprise.
 
-### Documentación Oficial del Servicio reCAPTCHA
-   Para más detalles y documentación oficial del servicio reCAPTCHA, visita el siguiente enlace:
-   - [Documentación Oficial de reCAPTCHA](https://cloud.google.com/recaptcha-enterprise/docs)
-   - [Flujo de reCAPTCHA](https://cloud.google.com/recaptcha/docs/overview?hl=es-419)
+#### Asignación de rol de `recaptchaenterprise.admin`
 
+```bash
+gcloud projects add-iam-policy-binding sop-izipay \
+    --member="serviceAccount:recaptcha-service-account@sop-izipay.iam.gserviceaccount.com" \
+    --role="roles/recaptchaenterprise.admin"
+```
+
+#### Asignación de rol de `recaptchaenterprise.agent`
+
+```bash
+gcloud projects add-iam-policy-binding sop-izipay \
+    --member="serviceAccount:recaptcha-service-account@sop-izipay.iam.gserviceaccount.com" \
+    --role="roles/recaptchaenterprise.agent"
+```
+
+- **roles/recaptchaenterprise.admin**: Permite la gestión total de recursos de reCAPTCHA.
+- **roles/recaptchaenterprise.agent**: Permite acceder a los datos de reCAPTCHA, pero no modificarlos.
+
+### **Paso 3: Verificar roles asignados**
+
+Verifica que los roles se hayan asignado correctamente:
+
+```bash
+gcloud projects get-iam-policy sop-izipay \
+    --flatten="bindings[].members" \
+    --format="table(bindings.role)" \
+    --filter="bindings.members:recaptcha-service-account@sop-izipay.iam.gserviceaccount.com"
+```
+
+---
+
+## **4. Crear y Descargar Clave para la Cuenta de Servicio**
+
+### **Paso 1: Crear una clave para la cuenta de servicio**
+
+Para interactuar programáticamente con la API de reCAPTCHA Enterprise, es necesario generar una clave de autenticación para la cuenta de servicio creada.
+
+```bash
+gcloud iam service-accounts keys create ~/Downloads/recaptcha-service-account-key.json \
+    --iam-account=recaptcha-service-account@sop-izipay.iam.gserviceaccount.com \
+    --project=sop-izipay
+```
+
+Este comando descarga un archivo JSON con las credenciales necesarias para autenticar tu cuenta de servicio.
+
+### **Paso 2: Verificar que la clave fue descargada correctamente**
+
+Ve a la carpeta `Downloads` y verifica el archivo `recaptcha-service-account-key.json`:
+
+```bash
+cd Downloads/
+cat recaptcha-service-account-key.json
+cd ..
+```
+
+---
+
+## **5. Crear una Clave de reCAPTCHA para el Proyecto**
+
+### **Paso 1: Crear la clave de reCAPTCHA**
+
+Ahora que hemos configurado el proyecto y la cuenta de servicio, el siguiente paso es crear una clave de reCAPTCHA para tu sitio web. Aquí utilizamos el tipo de integración `score`, que no muestra desafíos, pero analiza el riesgo de la solicitud.
+
+```bash
+gcloud recaptcha keys create --display-name="reCAPTCHA Key for Izipay" \
+    --web --domains=demo.izipay.pe,localhost --integration-type=score \
+    --project=sop-izipay
+```
+
+- **--domains=demo.izipay.pe,localhost**: Asegúrate de incluir todos los dominios que utilizarán reCAPTCHA (en este caso `demo.izipay.pe` y `localhost`).
+- **--integration-type=score**: Define el tipo de integración, en este caso `score`, que evalúa el riesgo sin mostrar un desafío.
+
+### **Paso 2: Verificar la clave creada**
+
+Puedes verificar que la clave fue creada correctamente a través de la consola de Google Cloud o utilizando el siguiente comando para listar las claves:
+
+```bash
+gcloud recaptcha keys list --project=sop-izipay
+```
+
+---
+
+## **6. Buenas Prácticas**
+
+A continuación, se detallan algunas buenas prácticas al trabajar con reCAPTCHA Enterprise en GCP:
+
+1. **Control de acceso**:
+   - Asegúrate de asignar roles mínimos necesarios a las cuentas de servicio para evitar el exceso de permisos.
+   - Usa la cuenta de servicio exclusivamente para tareas relacionadas con reCAPTCHA Enterprise.
+
+2. **Seguridad**:
+   - **Protege las claves JSON**: Mantén el archivo de clave de la cuenta de servicio de forma segura. No lo compartas públicamente ni lo subas a repositorios.
+   - Usa variables de entorno o secretos gestionados por herramientas de CI/CD para mantener las credenciales seguras.
+
+3. **Monitoreo y Logs**:
+   - Habilita la recopilación de logs para auditar las interacciones con la API de reCAPTCHA Enterprise. Esto te ayudará a identificar posibles problemas o uso no autorizado.
+
+4. **Desarrollo y Pruebas**:
+   - Utiliza dominios de prueba y ambientes controlados antes de desplegar a producción.
+   - Configura un **entorno de pruebas** para evaluar la precisión y la efectividad de reCAPTCHA antes de su implementación final.
+
+---
+
+## **Resumen**
+
+Este documento cubre todo el proceso de creación e implementación de **reCAPTCHA Enterprise** en un proyecto de Google Cloud Platform. Desde la creación del proyecto hasta la creación de una cuenta de servicio, asignación de roles, generación de claves y configuración de reCAPTCHA, se ha proporcionado una guía detallada para asegurar una implementación exitosa y segura.

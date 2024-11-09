@@ -38,12 +38,12 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
       const token = await (window as any).grecaptcha.enterprise.execute(keyId,
         { action: 'login', twofactor: true });
 
-      const verifyCaptchaResponse = await fetch('https://localhost:7037/verify-recaptcha', {
+      const verifyCaptchaResponse = await fetch('https://localhost:7017/v1/VerifyReCaptchaByUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, username, password }),
+        body: JSON.stringify({ tokenReCaptcha:token, userName:username, password }),
       });
 
       const result = await verifyCaptchaResponse.json();
@@ -80,39 +80,8 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
           // to the backend in order to determine if the code was valid.
           const verdictToken = verifyResponse.getVerdictToken();
 
-
-          // fetch('https://localhost:7037/verify-recaptcha', {
-          //   method: 'POST',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //   },
-          //   body: JSON.stringify({ token:verdictToken, username:email }),
-          // })
-          // .then((response)=>response.json())
-          // .then((result)=>{
-          //   const requestToken = result.response;
-          //   /***correcta verificacion SUCCESS_USER_VERIFIED	
-          //    * {
-          //       [...],
-          //       "accountVerification": {
-          //         "endpoints": [{
-          //           "emailAddress": "foo@bar.com",
-          //           "requestToken": "tplIUFvvJUIpLaOH0hIVj2H71t5Z9mDK2RhB1SAGSIUOgOIsBv",
-          //           "lastVerificationTime": "2020-03-23 08:27:12 PST",
-          //         }],
-          //         "latestVerificationResult": "SUCCESS_USER_VERIFIED"
-          //       }
-          //     }
-          //    * El usuario se ha verificado correctamente. Esto significa que el desafío de verificación de la cuenta se completó con éxito.
-          //    * ***/
-          //   console.log(requestToken)
-          // }).catch((backendError) => {
-          //   setError('PIN incorrecto, intenta de nuevo.');
-          //   console.error("Error al enviar el token al backend:", backendError);
-          //   // Manejo de error: notificar al usuario sobre un problema en la verificación del token
-          // });
       // Enviar `verdictToken` al backend para su validación adicional
-      fetch('https://localhost:7037/verify-verdict', {
+      fetch('https://localhost:7017/v1/verify-verdict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
