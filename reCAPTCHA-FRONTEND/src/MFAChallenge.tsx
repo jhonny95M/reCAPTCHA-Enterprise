@@ -38,7 +38,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
       const token = await (window as any).grecaptcha.enterprise.execute(keyId,
         { action: 'login', twofactor: true });
 
-      const verifyCaptchaResponse = await fetch('https://localhost:7017/v1/VerifyReCaptchaByUser', {
+      const verifyCaptchaResponse = await fetch('https://localhost:7037/v1/VerifyReCaptchaByUser', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +81,7 @@ const RecaptchaMFA: React.FC<RecaptchaMFAProps> = ({ keyId, containerId }) => {
           const verdictToken = verifyResponse.getVerdictToken();
 
       // Enviar `verdictToken` al backend para su validación adicional
-      fetch('https://localhost:7017/v1/verify-verdict', {
+      fetch('https://localhost:7073/v1/verify-verdict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

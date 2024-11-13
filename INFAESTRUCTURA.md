@@ -4,7 +4,15 @@
 Este documento detalla el proceso para crear e implementar **reCAPTCHA Enterprise** en Google Cloud Platform (GCP), con las configuraciones necesarias para que el servicio funcione con tu dominio. También cubre la creación de una cuenta de servicio y asignación de roles adecuados para gestionar reCAPTCHA Enterprise.
 
 ---
+## **Requisitos Previos**
 
+Antes de comenzar con la implementación de reCAPTCHA Enterprise, asegúrate de cumplir con los siguientes requisitos previos:
+
+1. **Cuenta de Google Cloud**: Debes tener una cuenta de Google Cloud con permisos suficientes para crear proyectos y gestionar recursos.
+2. **Facturación habilitada**: Asegúrate de que la facturación esté habilitada en tu cuenta de Google Cloud, ya que algunos servicios requieren una cuenta de facturación activa.
+3. **Acceso a la consola de Google Cloud**: Debes tener acceso a la consola de Google Cloud para realizar configuraciones y verificar el estado de los recursos.
+
+--- 
 ## **1. Creación del Proyecto en GCP**
 
 ### **Paso 1: Crear un nuevo proyecto**
@@ -136,7 +144,46 @@ Puedes verificar que la clave fue creada correctamente a través de la consola d
 ```bash
 gcloud recaptcha keys list --project=sop-izipay
 ```
+## **6. Configuración de MFA en reCAPTCHA Enterprise**
 
+### **Preparación**
+
+1. Asegúrate de haber configurado **reCAPTCHA Enterprise** en tu proyecto de Google Cloud.
+
+### **Verificación del Dominio del Remitente**
+
+Para utilizar un dominio personalizado como remitente en la autenticación de varios factores (MFA), es necesario verificar el dominio en **Google Search Console**. Sigue estos pasos:
+
+1. **Accede a Google Search Console**:
+   - Ve a [Google Search Console](https://search.google.com/search-console) e inicia sesión con la cuenta de Google asociada a tu proyecto.
+
+2. **Agregar el Dominio**:
+   - En la página de inicio de Search Console, haz clic en **Agregar propiedad**.
+   - Selecciona **Dominio** e ingresa el dominio completo (sin subdominios específicos), por ejemplo, `izipay.pe`.
+   - Haz clic en **Continuar**.
+
+3. **Verificar la Propiedad del Dominio**:
+   - Selecciona la opción de **Registro DNS** y copia el código proporcionado (tipo `TXT`).
+   - Accede a la configuración de DNS de tu dominio en tu proveedor (GoDaddy, Cloudflare, etc.).
+   - Agrega un nuevo registro de tipo `TXT` con el código proporcionado en Google Search Console y guarda los cambios.
+
+4. **Confirmar la Verificación en Google Search Console**:
+   - En Search Console, haz clic en **Verificar**. La verificación puede tardar unos minutos o hasta 24 horas, según tu proveedor de DNS.
+   - Una vez verificado, recibirás una confirmación de éxito.
+
+5. **Finalizar la Configuración en reCAPTCHA Enterprise**:
+   - Una vez verificado el dominio, continúa con los pasos de [Activación de la MFA en reCAPTCHA Enterprise](#activación-de-la-mfa-en-recaptcha-enterprise) para completar la configuración en la consola de Google Cloud.
+
+### **Activación de la MFA en reCAPTCHA Enterprise**
+
+1. Accede a la **Consola de Google Cloud** y dirígete a la página de **reCAPTCHA Enterprise**.
+2. Selecciona tu proyecto.
+3. Haz clic en **Configuración** (settings) y luego en **Autenticación de varios factores**.
+4. En el cuadro de diálogo de configuración de MFA, habilita la opción de **verificación por correo electrónico**.
+5. Introduce el **Nombre del remitente** y el **Correo electrónico del remitente** que se usará para enviar los códigos de verificación.
+
+Con estos pasos, habrás configurado correctamente la autenticación de varios factores (MFA) en reCAPTCHA Enterprise, incluyendo la verificación del dominio del remitente en Google Search Console.
+---
 ---
 
 ## **6. Buenas Prácticas**
@@ -157,6 +204,7 @@ A continuación, se detallan algunas buenas prácticas al trabajar con reCAPTCHA
 4. **Desarrollo y Pruebas**:
    - Utiliza dominios de prueba y ambientes controlados antes de desplegar a producción.
    - Configura un **entorno de pruebas** para evaluar la precisión y la efectividad de reCAPTCHA antes de su implementación final.
+
 
 ---
 

@@ -45,18 +45,17 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterpriseServiceClient recaptchaClient) =>
+app.MapPost("/v1/VerifyReCaptchaByUser", async (HttpRequest request, RecaptchaEnterpriseServiceClient recaptchaClient) =>
 {
     var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
     var projectId = recaptchaConfig["ProjectId"];
     var siteKey = recaptchaConfig["SiteKey"];
-    var accountId = recaptchaConfig["AccountId"];
-    var emailAddress = recaptchaConfig["EmailAddress"];
+    var accountId = Guid.NewGuid().ToString();//recaptchaConfig["AccountId"];
 
     using var reader = new StreamReader(request.Body);
     var body = await reader.ReadToEndAsync();
-    var token = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("token").GetString();
-    var username = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("username").GetString();
+    var token = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("tokenReCaptcha").GetString();
+    var username = System.Text.Json.JsonDocument.Parse(body).RootElement.GetProperty("userName").GetString();
 
     // Configura la solicitud de evaluación
     var assesName = AssessmentName.FromProjectAssessment(projectId, token);
@@ -106,12 +105,12 @@ app.MapPost("/verify-recaptcha", async (HttpRequest request, RecaptchaEnterprise
 .WithOpenApi();
 
 // Endpoint de verificación del verdictToken
-app.MapPost("/verify-verdict", async (HttpContext context, RecaptchaEnterpriseServiceClient recaptchaClient) =>
+app.MapPost("/v1/verify-verdict", async (HttpContext context, RecaptchaEnterpriseServiceClient recaptchaClient) =>
 {
     var recaptchaConfig = builder.Configuration.GetSection("Recaptcha");
     var projectId = recaptchaConfig["ProjectId"];
     var siteKey = recaptchaConfig["SiteKey"];
-    var accountId = recaptchaConfig["AccountId"];
+    var accountId = Guid.NewGuid().ToString();//recaptchaConfig["AccountId"];
     // Obtener el verdictToken enviado desde el frontend
     var requestBody = await context.Request.ReadFromJsonAsync<VerificationRequest>();
 
